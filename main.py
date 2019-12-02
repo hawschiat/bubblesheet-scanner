@@ -247,26 +247,45 @@ def identify_bubbles(src, choice_count: int = 4, log_path: str = ''):
         new_path = f"{p.parent.absolute()}/{p.stem}_marked_choices.jpg"
         cv.imwrite(new_path, with_contour)
 
-    # store the bubbled choices in a list
-    bubbled_choices = []
+        # sorting using the bounds using X axis
+    first_col, second_col, third_col, fourth_col = [], [], [], []
+    question_bounds_x = [x[0] for x in question_bounds]
+
+    for x in range(0, len(question_cnts), 16):
+        sorted_ques = [question_cnts[x+i] for i in np.argsort(question_bounds_x[x:x+16])]
+        first_col.append(sorted_ques[0:4])
+        second_col.append(sorted_ques[4:8])
+        third_col.append(sorted_ques[8:12])
+        fourth_col.append(sorted_ques[12:16])
+
+    ## Combining list of all questions
+    sorted_question = first_col + second_col + third_col + fourth_col
+    # length = 100
+
+    if log_path:
+        rgb = cv.cvtColor(src, cv.COLOR_GRAY2RGB)
+        # Give different colors to different columns
+        with_contour = None
+        for c in sorted_question:
+            color = list(np.random.random(size=3) * 256)
+            with_contour = cv.drawContours(rgb, c, -1, color, 2)
+        p = Path(log_path)
+        new_path = f"{p.parent.absolute()}/{p.stem}_combined_cont_questions.jpg"
+        cv.imwrite(new_path, with_contour)
+    
+
+    ## Converting this back to a flat list of 400 contours to run with existing code, but its already sorted
+    sorted_question_cnts = [item for sublist in sorted_question for item in sublist]
+    # length = 400
+
+
+    choice_count = 4
     current_row = []
-    current_y = question_bounds[0][1]
 
     # loop over the question in batches of the defined number of choice
     for (q, i) in enumerate(np.arange(0, len(question_cnts), choice_count)):
-        # sort the contours for the current question from
-        # left to right, then initialize the index of the
-        # bubbled answer
-        cnts = contours.sort_contours(question_cnts[i:i + choice_count])[0]
+        cnts = sorted_question_cnts[i:i + choice_count]
         bubbled = []
-
-        # if the current bubbles are lower than the current minimum,
-        # then we append the current row to the master list
-        y = max(list(map(lambda b: b[1], question_bounds[i:i + choice_count])))
-        if y > (current_y + height / 100):
-            bubbled_choices.append(current_row)
-            current_y = y
-            current_row = []
 
         # loop over the sorted contours
         for (j, c) in enumerate(cnts):
@@ -289,6 +308,7 @@ def identify_bubbles(src, choice_count: int = 4, log_path: str = ''):
             # then we are examining the currently bubbled-in answer
             if total > (2 * cv.contourArea(bound[0]) / 3):
                 bubbled.append((total, j))
+        
 
         # put the selected choice(s) into the master list
         if len(bubbled) == 0:
@@ -296,13 +316,7 @@ def identify_bubbles(src, choice_count: int = 4, log_path: str = ''):
         else:
             current_row.append(list(map(lambda b: b[1], bubbled)))
 
-    # Append the last row to the list
-    if len(current_row) > 0:
-        bubbled_choices.append(current_row)
-
-    # Transpose the matrix to get the right order
-    transpose = [[bubbled_choices[j][i] for j in range(len(bubbled_choices))] for i in range(len(bubbled_choices[0]))]
-    return [arr for subarr in transpose for arr in subarr]
+    return current_row
 
 
 def main(paths):
