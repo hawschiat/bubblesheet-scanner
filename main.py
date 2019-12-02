@@ -124,9 +124,9 @@ def identify_id(src, id_length: int = 10, log_path: str = ''):
     bubble_cnts = contours.sort_contours(bubble_cnts)[0]
 
     bubble_matrix = []
-    for (b, i) in enumerate(np.arange(0, len(bubble_cnts), 20)):
+    for (b, i) in enumerate(np.arange(0, len(bubble_cnts), 10)):
         # sort the contours for this row top-to-bottom, then append to the list
-        cnts = (contours.sort_contours(bubble_cnts[i:i + 20], method="top-to-bottom")[0])[::2]
+        cnts = (contours.sort_contours(bubble_cnts[i:i + 10], method="top-to-bottom")[0])[::1]
         bubble_matrix.append(cnts)
 
     if log_path:
