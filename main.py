@@ -120,6 +120,8 @@ def identify_id(src, id_length: int = 10, log_path: str = ''):
     if len(bubble_cnts) == 0:
         raise ValueError("Could not find the bubbles!")
 
+    # assert(len(bubble_cnts) == 100)
+
     # sort the bubble contours left-to-right
     bubble_cnts = contours.sort_contours(bubble_cnts)[0]
 
