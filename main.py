@@ -31,17 +31,7 @@ def get_bin_threshold(src, log_path: str = ''):
         raise ValueError('Provided data is invalid!')
     # apply Otsu's thresholding method to binarize the warped piece of paper
     thresh = cv.threshold(src, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
-
-    # Denoise
-    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (1, 1))
-    thresh = cv.morphologyEx(thresh, cv.MORPH_CLOSE, kernel)
-    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (1, 1))
-    thresh = cv.erode(thresh, kernel, iterations=2)
-
-    # ---Sharpening filter----
-    kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-    thresh = cv.filter2D(thresh, -1, kernel)
-
+    
     # Dilate image
     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (2, 2))
     thresh = cv.dilate(thresh, kernel, iterations=1)
