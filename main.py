@@ -31,10 +31,10 @@ def get_bin_threshold(src, log_path: str = ''):
         raise ValueError('Provided data is invalid!')
     # apply Otsu's thresholding method to binarize the warped piece of paper
     thresh = cv.threshold(src, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
-    
+
     # Dilate image
     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (2, 2))
-    thresh = cv.dilate(thresh, kernel, iterations=1)
+    thresh = cv.dilate(thresh, kernel, iterations=2)
 
     if log_path:
         p = Path(log_path)
